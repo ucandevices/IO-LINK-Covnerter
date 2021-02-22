@@ -58,6 +58,56 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define T3_UC_SIO_Pin GPIO_PIN_15
+#define T3_UC_SIO_GPIO_Port GPIOC
+#define UC_T3_ENCQ_Pin GPIO_PIN_0
+#define UC_T3_ENCQ_GPIO_Port GPIOC
+#define UC_T3_RST_Pin GPIO_PIN_1
+#define UC_T3_RST_GPIO_Port GPIOC
+#define UC_T3_ENL_Pin GPIO_PIN_2
+#define UC_T3_ENL_GPIO_Port GPIOC
+#define T3_UC_IRQ_Pin GPIO_PIN_3
+#define T3_UC_IRQ_GPIO_Port GPIOC
+#define CS_ETH_Pin GPIO_PIN_4
+#define CS_ETH_GPIO_Port GPIOA
+#define UC_T2_RST_Pin GPIO_PIN_0
+#define UC_T2_RST_GPIO_Port GPIOB
+#define UC_T2_ENCQ_Pin GPIO_PIN_1
+#define UC_T2_ENCQ_GPIO_Port GPIOB
+#define UC_T2_ENL_Pin GPIO_PIN_2
+#define UC_T2_ENL_GPIO_Port GPIOB
+#define T2_UC_IRQ_Pin GPIO_PIN_10
+#define T2_UC_IRQ_GPIO_Port GPIOB
+#define T2_UC_SIO_Pin GPIO_PIN_11
+#define T2_UC_SIO_GPIO_Port GPIOB
+#define UC_T1_RST_Pin GPIO_PIN_12
+#define UC_T1_RST_GPIO_Port GPIOB
+#define UC_T1_ENCQ_Pin GPIO_PIN_13
+#define UC_T1_ENCQ_GPIO_Port GPIOB
+#define UC_T1_ENL_Pin GPIO_PIN_14
+#define UC_T1_ENL_GPIO_Port GPIOB
+#define T1_UC_IRQ_Pin GPIO_PIN_15
+#define T1_UC_IRQ_GPIO_Port GPIOB
+#define T0_UC_SIO_Pin GPIO_PIN_6
+#define T0_UC_SIO_GPIO_Port GPIOC
+#define T0_UC_IRQ_Pin GPIO_PIN_7
+#define T0_UC_IRQ_GPIO_Port GPIOC
+#define UC_T0_ENCQ_Pin GPIO_PIN_8
+#define UC_T0_ENCQ_GPIO_Port GPIOC
+#define UC_T0_ENL_Pin GPIO_PIN_9
+#define UC_T0_ENL_GPIO_Port GPIOC
+#define UC_T0_RST_Pin GPIO_PIN_8
+#define UC_T0_RST_GPIO_Port GPIOA
+#define T1_UC_SIO_Pin GPIO_PIN_15
+#define T1_UC_SIO_GPIO_Port GPIOA
+#define RST_ETH_Pin GPIO_PIN_10
+#define RST_ETH_GPIO_Port GPIOC
+#define INT_ETH_Pin GPIO_PIN_11
+#define INT_ETH_GPIO_Port GPIOC
+#define RST_ETHB4_Pin GPIO_PIN_4
+#define RST_ETHB4_GPIO_Port GPIOB
+#define INT_ETHB5_Pin GPIO_PIN_5
+#define INT_ETHB5_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */

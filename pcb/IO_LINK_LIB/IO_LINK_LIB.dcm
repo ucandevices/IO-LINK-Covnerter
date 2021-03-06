@@ -1,0 +1,506 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP 1.2mH_1.1RDC_800mA
+D Inductor
+K inductor choke coil reactor magnetic
+F ~
+$ENDCMP
+#
+$CMP 100R_1%_0.1W_0603
+D Resistor, US symbol
+K R res resistor
+F ~
+$ENDCMP
+#
+$CMP 100k_1%_0.1W_0603
+D Resistor, US symbol
+K R res resistor
+F ~
+$ENDCMP
+#
+$CMP 100nF_25V_0603
+D Unpolarized capacitor
+K cap capacitor
+F ~
+$ENDCMP
+#
+$CMP 100nF_50V_0603
+D Unpolarized capacitor
+K cap capacitor
+F ~
+$ENDCMP
+#
+$CMP 10R_1%_0.1W_0603
+D Resistor, US symbol
+K R res resistor
+F ~
+$ENDCMP
+#
+$CMP 10k_1%_0.1W_0603
+D Resistor, US symbol
+K R res resistor
+F ~
+$ENDCMP
+#
+$CMP 10nF_50V_0603
+D Unpolarized capacitor
+K cap capacitor
+F ~
+$ENDCMP
+#
+$CMP 10uF_25V_0805
+D Unpolarized capacitor
+K cap capacitor
+F ~
+$ENDCMP
+#
+$CMP 10uF_50V_1206
+D Unpolarized capacitor
+K cap capacitor
+F ~
+$ENDCMP
+#
+$CMP 10uF_50V_6.3mm_x_5.8mm_electrolytic
+D Polarized capacitor
+K cap capacitor
+F ~
+$ENDCMP
+#
+$CMP 11k_1%_0.1W_0603
+D Resistor, US symbol
+K R res resistor
+F ~
+$ENDCMP
+#
+$CMP 120R_1%_0.1W_0603
+D Resistor, US symbol
+K R res resistor
+F ~
+$ENDCMP
+#
+$CMP 124k_0.1%_0.1W_0603
+D Resistor, US symbol
+K R res resistor
+F ~
+$ENDCMP
+#
+$CMP 12k4_1%_0.1W_0603
+D Resistor, US symbol
+K R res resistor
+F ~
+$ENDCMP
+#
+$CMP 150R_1%_0.1W_0603
+D Resistor, US symbol
+K R res resistor
+F ~
+$ENDCMP
+#
+$CMP 15R_1%_0.1W_0603
+D Resistor, US symbol
+K R res resistor
+F ~
+$ENDCMP
+#
+$CMP 15uF_16V_0805
+D Unpolarized capacitor
+K cap capacitor
+F ~
+$ENDCMP
+#
+$CMP 18nF_16V_0603
+D Unpolarized capacitor
+K cap capacitor
+F ~
+$ENDCMP
+#
+$CMP 1M_1%_0.1W_0603
+D Resistor, US symbol
+K R res resistor
+F ~
+$ENDCMP
+#
+$CMP 1R_1%_0.1W_0603
+D Resistor, US symbol
+K R res resistor
+F ~
+$ENDCMP
+#
+$CMP 1k5_1%_0.1W_0603
+D Resistor, US symbol
+K R res resistor
+F ~
+$ENDCMP
+#
+$CMP 1k_1%_0.1W_0603
+D Resistor, US symbol
+K R res resistor
+F ~
+$ENDCMP
+#
+$CMP 1uF_10V_0603
+D Unpolarized capacitor
+K cap capacitor
+F ~
+$ENDCMP
+#
+$CMP 2.2uF_10V_0603
+D Unpolarized capacitor
+K cap capacitor
+F ~
+$ENDCMP
+#
+$CMP 2.2uF_16V_0603
+D Unpolarized capacitor
+K cap capacitor
+F ~
+$ENDCMP
+#
+$CMP 2.2uF_50V_0805
+D Unpolarized capacitor
+K cap capacitor
+F ~
+$ENDCMP
+#
+$CMP 20pF_50V_0603
+D Unpolarized capacitor
+K cap capacitor
+F ~
+$ENDCMP
+#
+$CMP 220nF_50V_0805
+D Unpolarized capacitor
+K cap capacitor
+F ~
+$ENDCMP
+#
+$CMP 22nF_50V_0603
+D Unpolarized capacitor
+K cap capacitor
+F ~
+$ENDCMP
+#
+$CMP 22pF_50V_0603
+D Unpolarized capacitor
+K cap capacitor
+F ~
+$ENDCMP
+#
+$CMP 36k_1%_0.1W_0603
+D Resistor, US symbol
+K R res resistor
+F ~
+$ENDCMP
+#
+$CMP 383R_1%_0.1W_0603
+D Resistor, US symbol
+K R res resistor
+F ~
+$ENDCMP
+#
+$CMP 390R_1%_0.1W_0603
+D Resistor, US symbol
+K R res resistor
+F ~
+$ENDCMP
+#
+$CMP 3V3
+D Power symbol creates a global label with name "3V3" , positive voltage
+K power-flag
+$ENDCMP
+#
+$CMP 3V3_T0
+D Power symbol creates a global label with name "8V" , positive voltage
+K power-flag
+$ENDCMP
+#
+$CMP 3V3_T1
+D Power symbol creates a global label with name "8V" , positive voltage
+K power-flag
+$ENDCMP
+#
+$CMP 3V3_T2
+D Power symbol creates a global label with name "8V" , positive voltage
+K power-flag
+$ENDCMP
+#
+$CMP 3V3_T3
+D Power symbol creates a global label with name "8V" , positive voltage
+K power-flag
+$ENDCMP
+#
+$CMP 4.7uF_10V_0603
+D Unpolarized capacitor
+K cap capacitor
+F ~
+$ENDCMP
+#
+$CMP 430R_1%_0.1W_0603
+D Resistor, US symbol
+K R res resistor
+F ~
+$ENDCMP
+#
+$CMP 43R_1%_0.1W_0603
+D Resistor, US symbol
+K R res resistor
+F ~
+$ENDCMP
+#
+$CMP 47pF_50V_0603
+D Unpolarized capacitor
+K cap capacitor
+F ~
+$ENDCMP
+#
+$CMP 49R9_1%_0.1W_0603
+D Resistor, US symbol
+K R res resistor
+F ~
+$ENDCMP
+#
+$CMP 4k7_1%_0.1W_0603
+D Resistor, US symbol
+K R res resistor
+F ~
+$ENDCMP
+#
+$CMP 510R_1%_0.1W_0603
+D Resistor, US symbol
+K R res resistor
+F ~
+$ENDCMP
+#
+$CMP 560pF_50V_0603
+D Unpolarized capacitor
+K cap capacitor
+F ~
+$ENDCMP
+#
+$CMP 5V
+D Power symbol creates a global label with name "5V" , positive voltage
+K power-flag
+$ENDCMP
+#
+$CMP 6.8nF_50V_0603
+D Unpolarized capacitor
+K cap capacitor
+F ~
+$ENDCMP
+#
+$CMP 60R4_1%_0.1W_0603
+D Resistor, US symbol
+K R res resistor
+F ~
+$ENDCMP
+#
+$CMP 680R_1%_0.1W_0603
+D Resistor, US symbol
+K R res resistor
+F ~
+$ENDCMP
+#
+$CMP 82pF_50V_0603
+D Unpolarized capacitor
+K cap capacitor
+F ~
+$ENDCMP
+#
+$CMP 8V
+D Power symbol creates a global label with name "8V" , positive voltage
+K power-flag
+$ENDCMP
+#
+$CMP ACT45B-101-2P-TL003
+D Common mode choke
+F ~
+$ENDCMP
+#
+$CMP BC848C
+D NPN transistor, base/collector/emitter
+K transistor NPN
+F https://datasheet.lcsc.com/szlcsc/Leshan-Radio-LBC848CLT1G_C94562.pdf
+$ENDCMP
+#
+$CMP CRYSTAL_16MHz_4PADS
+D 4 PADS CRYSTAL
+K quartz ceramic resonator oscillator
+F ~
+$ENDCMP
+#
+$CMP CRYSTAL_25MHz_4PADS
+D 4 PADS CRYSTAL
+K quartz ceramic resonator oscillator
+F ~
+$ENDCMP
+#
+$CMP CRYSTAL_SMD
+D Two pin crystal
+K quartz ceramic resonator oscillator
+F ~
+$ENDCMP
+#
+$CMP Coil_100uH_0805
+D Coil 100uH 0805
+K Coil 100uH 0805
+F ~
+$ENDCMP
+#
+$CMP DC_DC_CONVERTER_LM2596_PCB_MODULE
+F ~
+$ENDCMP
+#
+$CMP ESDCAN24
+F ~
+$ENDCMP
+#
+$CMP FB_30R@100MHz
+D Ferrite bead 30R @ 100MHz
+K Ferrite bead 30R @ 100MHz
+F ~
+$ENDCMP
+#
+$CMP G
+D Power symbol creates a global label with name "GNDREF" , reference supply ground
+K power-flag
+$ENDCMP
+#
+$CMP GOLDPIN_6x1_2.54mm
+D Generic connector, single row, 6pin, 2.54mm
+K connector
+F ~
+$ENDCMP
+#
+$CMP HR911105A
+D RJ45
+K RJ45
+$ENDCMP
+#
+$CMP IDC_20
+D Generic connector, double row, 02x10
+K connector
+F ~
+$ENDCMP
+#
+$CMP JUMPER_0603
+D Resistor, US symbol
+K R res resistor
+F ~
+$ENDCMP
+#
+$CMP JUMPER_0805
+D Resistor, US symbol
+K R res resistor
+F ~
+$ENDCMP
+#
+$CMP L7986A
+D Switching Voltage Regulators 3A Step-Down Reg 4.5 to 38V 250 KHz
+$ENDCMP
+#
+$CMP LED_GREEN
+D GREEN Light emitting diode
+K LED diode
+F ~
+$ENDCMP
+#
+$CMP LED_RED
+D RED Light emitting diode
+K LED diode
+F ~
+$ENDCMP
+#
+$CMP LED_YELLOW
+D YELLOW Light emitting diode
+K LED diode
+F ~
+$ENDCMP
+#
+$CMP MAX3051
+D CAN tranceiver
+$ENDCMP
+#
+$CMP MountingHole
+D Mounting Hole without connection
+K mounting hole
+F ~
+$ENDCMP
+#
+$CMP SM15T33CAY
+F ~
+$ENDCMP
+#
+$CMP SOLDERABLE_SELECTOR
+D 0805 JUMPER SELECTOR
+F ~
+$ENDCMP
+#
+$CMP SOLDERED_SELECTOR
+D 0805 JUMPER SELECTOR
+F ~
+$ENDCMP
+#
+$CMP ST3485EBDR
+D RS485, RS422 Transceivet
+$ENDCMP
+#
+$CMP STM_PROGRAMING_CONNECTOR
+D Generic connector, single row, 6pin, 2.54mm
+K connector
+F ~
+$ENDCMP
+#
+$CMP STPS1H100A
+F ~
+$ENDCMP
+#
+$CMP STPS1L40M
+F ~
+$ENDCMP
+#
+$CMP Screw_Terminal_01x02
+D Generic screw terminal, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)
+K screw terminal
+F ~
+$ENDCMP
+#
+$CMP Screw_Terminal_01x03
+D Generic screw terminal, single row, 01x03, script generated (kicad-library-utils/schlib/autogen/connector/)
+K screw terminal
+F ~
+$ENDCMP
+#
+$CMP Screw_Terminal_01x04
+D Generic screw terminal, single row, 01x04, script generated (kicad-library-utils/schlib/autogen/connector/)
+K screw terminal
+F ~
+$ENDCMP
+#
+$CMP TestPoint
+D test point
+K test point tp
+F ~
+$ENDCMP
+#
+$CMP USB_B_Mini
+D USB Mini Type B connector
+K connector USB mini
+F ~
+$ENDCMP
+#
+$CMP VCC
+D Power symbol creates a global label with name "VCC" , positive voltage
+K power-flag
+$ENDCMP
+#
+$CMP W5500
+D Ethernet controller
+F https://datasheet.lcsc.com/szlcsc/WIZNET-W5500_C32843.pdf
+$ENDCMP
+#
+$CMP W5500_ETHERNET_PCB_MODULE
+D W5500 ETHERNET PCB MODULE
+F ~
+$ENDCMP
+#
+#End Doc Library

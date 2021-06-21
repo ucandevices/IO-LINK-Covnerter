@@ -104,10 +104,10 @@ void Error_Handler(void);
 #define RST_ETH_GPIO_Port GPIOC
 #define INT_ETH_Pin GPIO_PIN_11
 #define INT_ETH_GPIO_Port GPIOC
-#define RST_ETHB4_Pin GPIO_PIN_4
-#define RST_ETHB4_GPIO_Port GPIOB
-#define INT_ETHB5_Pin GPIO_PIN_5
-#define INT_ETHB5_GPIO_Port GPIOB
+#define L_ON_Pin GPIO_PIN_3
+#define L_ON_GPIO_Port GPIOB
+#define USB_ENABLE_Pin GPIO_PIN_9
+#define USB_ENABLE_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */

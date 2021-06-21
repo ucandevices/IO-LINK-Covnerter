@@ -128,6 +128,8 @@ static int8_t CDC_Control_FS(uint8_t cmd, uint8_t* pbuf, uint16_t length);
 static int8_t CDC_Receive_FS(uint8_t* pbuf, uint32_t *Len);
 
 /* USER CODE BEGIN PRIVATE_FUNCTIONS_DECLARATION */
+uint8_t CDC_Transmit_FS(uint8_t* Buf, uint16_t Len);
+static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len);
 
 /* USER CODE END PRIVATE_FUNCTIONS_DECLARATION */
 
@@ -262,6 +264,26 @@ static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
   /* USER CODE BEGIN 6 */
   USBD_CDC_SetRxBuffer(&hUsbDeviceFS, &Buf[0]);
   USBD_CDC_ReceivePacket(&hUsbDeviceFS);
+
+  extern uint8_t USB_rxBuffer[64];
+  extern uint8_t USB_rxLength;
+  extern uint8_t USB_rxFlag;
+
+//  uint8_t iter;
+//  for(iter = 0; iter < 40; ++iter)
+//  {
+//	  USB_rxBuffer[iter] = 0;
+//  }
+//
+//  strlcpy((char*)USB_rxBuffer, (char*)Buf, (*Len) + 1);
+
+  memset (USB_rxBuffer, '\0', 64);  // clear the buffer
+  USB_rxLength = (uint8_t)*Len;
+  memcpy(USB_rxBuffer, Buf, USB_rxLength);  // copy the data to the buffer
+  memset(Buf, '\0', USB_rxLength);   // clear the Buf also
+
+  USB_rxFlag = 1;
+
   return (USBD_OK);
   /* USER CODE END 6 */
 }

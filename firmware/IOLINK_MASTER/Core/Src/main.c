@@ -19,10 +19,24 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "i2c.h"
+#include "spi.h"
+#include "tim.h"
+#include "usart.h"
 #include "usb_device.h"
+#include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "usbd_cdc_if.h"
+#include "io_link.h"
+#include "l6360.h"
+#include "io_link.h"
+
+#include "wizchip_conf.h"
+#include "socket.h"
+#include "wiz_ster.h"
+
 
 /* USER CODE END Includes */
 
@@ -33,6 +47,10 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+
+#define TIMEOUT_RECEIVE 3
+
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -41,34 +59,76 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-I2C_HandleTypeDef hi2c1;
-
-SPI_HandleTypeDef hspi1;
-
-UART_HandleTypeDef huart1;
-UART_HandleTypeDef huart2;
-UART_HandleTypeDef huart3;
-UART_HandleTypeDef huart4;
 
 /* USER CODE BEGIN PV */
 
+//uint8_t TIMEOUT_RECEIVE = 2;
+
+uint8_t USB_txBuffer[64];
+uint8_t USB_txLength = 0;
+uint8_t USB_rxBuffer[64];
+uint8_t USB_rxLength = 0;
+uint8_t USB_rxFlag = 0;
+
+uint8_t periodically_uart[4] = {0};
+uint8_t periodically_i2c = 0;
+uint8_t periodically_sio = 0;
+
+uint8_t com_baud[4] = {0};
+
+uint16_t cnt = 1;
+
+uint32_t timeout_rec0 = 0;
+uint32_t timeout_rec1 = 0;
+uint32_t timeout_rec2 = 0;
+uint32_t timeout_rec3 = 0;
+uint8_t buf_rec0[64];
+uint8_t buf_rec0_l = 0;
+uint8_t buf_rec1[64] = {0,};
+uint8_t buf_rec1_l = 0;
+uint8_t buf_rec2[64] = {0,};
+uint8_t buf_rec2_l = 0;
+uint8_t buf_rec3[64] = {0,};
+uint8_t buf_rec3_l = 0;
+
+
+
+//extern UART_HandleTypeDef pUartHandle;
+extern uint8_t uartRxBuffer[4];
+//extern IO_LINK_SPE_HEADER;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-static void MX_GPIO_Init(void);
-static void MX_SPI1_Init(void);
-static void MX_USART1_UART_Init(void);
-static void MX_USART2_UART_Init(void);
-static void MX_USART3_UART_Init(void);
-static void MX_USART4_UART_Init(void);
-static void MX_I2C1_Init(void);
 /* USER CODE BEGIN PFP */
+void L6360_Reset(uint8_t com);
+void IO_LINK_Init(uint8_t dev);
+void SIO_Init(uint8_t dev);
+
+void DisplayNetConf(void);
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+struct IO_LINK_SPE_HEADER HEADER_RS = {
+		.HeaderVersion = 0x00,
+		.HeaderSize = 0x00,
+		.IO_LINK_ProtocolVersion = 0x00,
+		.TransferDirection = 0x00,
+		.IO_LINK_FrameType = 0x00,
+		.IO_LINK_FrameSize0 = 0x00,
+		.IO_LINK_FrameSize1 = 0x00,
+		.PortNumber = 0x00
+		};
+
+wiz_NetInfo gWIZNETINFO = { .mac = {0x00, 0x08, 0xdc, 0xab, 0xcd, 0xef},
+                            .ip = {192, 168, 1, 2},
+                            .sn = {255, 255, 255, 0},
+                            .gw = {192, 168, 1, 1},
+                            .dns = {0, 0, 0, 0},
+                            .dhcp = NETINFO_STATIC };
 
 /* USER CODE END 0 */
 
@@ -79,6 +139,7 @@ static void MX_I2C1_Init(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
+
 
   /* USER CODE END 1 */
 
@@ -107,7 +168,36 @@ int main(void)
   MX_USART4_UART_Init();
   MX_I2C1_Init();
   MX_USB_DEVICE_Init();
+  MX_TIM17_Init();
+  MX_TIM7_Init();
   /* USER CODE BEGIN 2 */
+
+  L6360_Reset(0);
+
+  HAL_TIM_Base_Start(&htim17);
+  HAL_TIM_Base_Start_IT(&htim7);
+
+  HAL_Delay(2000); //wait to init usb (temporary)
+  HAL_GPIO_WritePin(USB_ENABLE_GPIO_Port, USB_ENABLE_Pin, SET);
+
+  __HAL_UART_FLUSH_DRREGISTER(&huart1);
+  __HAL_UART_FLUSH_DRREGISTER(&huart2);
+  __HAL_UART_FLUSH_DRREGISTER(&huart3);
+  __HAL_UART_FLUSH_DRREGISTER(&huart4);
+
+
+<<<<<<< HEAD
+  memset(USB_txBuffer, '\0', sizeof(USB_txBuffer));
+  USB_txLength = sprintf((char*)USB_txBuffer, "\r\nStart Program v1.1\r\n\n");
+  CDC_Transmit_FS(USB_txBuffer, USB_txLength);
+=======
+//  memset(USB_txBuffer, '\0', sizeof(USB_txBuffer));
+//  USB_txLength = sprintf((char*)USB_txBuffer, "\r\nStart Program v2.3\r\n\n");
+//  CDC_Transmit_FS(USB_txBuffer, USB_txLength);
+>>>>>>> test1
+  HAL_Delay(1000);
+
+
 
   /* USER CODE END 2 */
 
@@ -115,6 +205,54 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+
+	  if(USB_rxFlag == 1)
+	  {
+		  USB_rxFlag = 0;
+		  if( USB_rxLength > 1)
+		  {
+<<<<<<< HEAD
+			  CDC_Transmit_FS(USB_rxBuffer, USB_rxLength);
+//			  IoLinkMType0(0, USB_rxBuffer);
+=======
+
+			  IoLinkHeader(&HEADER_RS, USB_rxBuffer, USB_rxLength);
+//			  HAL_UART_Receive_IT(&huart1, &uartRxBuffer[0], 1);
+
+>>>>>>> test1
+		  }
+		  else
+		  {
+			  switch(USB_rxBuffer[0])
+			  {
+			  	  case '0': //stop all
+			  		  L6360_Reset(1); break;
+			  	  case '1':
+			  		  SIO_Init(0); break;
+			  	  case '2':
+			  		  IO_LINK_Init(0); break;
+			  	  case '3':
+			  		  SIO_Init(1); break;
+			  	  case '4':
+			  		  IO_LINK_Init(1); break;
+			  	  case '5':
+			  		  SIO_Init(2); break;
+			  	  case '6':
+			  		  IO_LINK_Init(2); break;
+			  	  case '7':
+			  		  SIO_Init(3); break;
+			  	  case '8':
+			  		  IO_LINK_Init(3); break;
+			  	  default:
+			  		  HAL_NVIC_SystemReset(); break;
+			  }
+		  }
+
+
+	  }
+
+//	  HAL_Delay(500);
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -131,6 +269,7 @@ void SystemClock_Config(void)
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
   RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
+  RCC_CRSInitTypeDef RCC_CRSInitStruct = {0};
 
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
@@ -167,308 +306,199 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-}
-
-/**
-  * @brief I2C1 Initialization Function
-  * @param None
-  * @retval None
+  /** Enable the SYSCFG APB clock
   */
-static void MX_I2C1_Init(void)
-{
-
-  /* USER CODE BEGIN I2C1_Init 0 */
-
-  /* USER CODE END I2C1_Init 0 */
-
-  /* USER CODE BEGIN I2C1_Init 1 */
-
-  /* USER CODE END I2C1_Init 1 */
-  hi2c1.Instance = I2C1;
-  hi2c1.Init.Timing = 0x2000090E;
-  hi2c1.Init.OwnAddress1 = 0;
-  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
-  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
-  hi2c1.Init.OwnAddress2 = 0;
-  hi2c1.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
-  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
-  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
-  if (HAL_I2C_Init(&hi2c1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /** Configure Analogue filter
+  __HAL_RCC_CRS_CLK_ENABLE();
+  /** Configures CRS
   */
-  if (HAL_I2CEx_ConfigAnalogFilter(&hi2c1, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /** Configure Digital filter
-  */
-  if (HAL_I2CEx_ConfigDigitalFilter(&hi2c1, 0) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN I2C1_Init 2 */
+  RCC_CRSInitStruct.Prescaler = RCC_CRS_SYNC_DIV1;
+  RCC_CRSInitStruct.Source = RCC_CRS_SYNC_SOURCE_USB;
+  RCC_CRSInitStruct.Polarity = RCC_CRS_SYNC_POLARITY_RISING;
+  RCC_CRSInitStruct.ReloadValue = __HAL_RCC_CRS_RELOADVALUE_CALCULATE(48000000,1000);
+  RCC_CRSInitStruct.ErrorLimitValue = 34;
+  RCC_CRSInitStruct.HSI48CalibrationValue = 32;
 
-  /* USER CODE END I2C1_Init 2 */
-
-}
-
-/**
-  * @brief SPI1 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_SPI1_Init(void)
-{
-
-  /* USER CODE BEGIN SPI1_Init 0 */
-
-  /* USER CODE END SPI1_Init 0 */
-
-  /* USER CODE BEGIN SPI1_Init 1 */
-
-  /* USER CODE END SPI1_Init 1 */
-  /* SPI1 parameter configuration*/
-  hspi1.Instance = SPI1;
-  hspi1.Init.Mode = SPI_MODE_MASTER;
-  hspi1.Init.Direction = SPI_DIRECTION_2LINES;
-  hspi1.Init.DataSize = SPI_DATASIZE_4BIT;
-  hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
-  hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
-  hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
-  hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
-  hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
-  hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
-  hspi1.Init.CRCPolynomial = 7;
-  hspi1.Init.CRCLength = SPI_CRC_LENGTH_DATASIZE;
-  hspi1.Init.NSSPMode = SPI_NSS_PULSE_ENABLE;
-  if (HAL_SPI_Init(&hspi1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN SPI1_Init 2 */
-
-  /* USER CODE END SPI1_Init 2 */
-
-}
-
-/**
-  * @brief USART1 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_USART1_UART_Init(void)
-{
-
-  /* USER CODE BEGIN USART1_Init 0 */
-
-  /* USER CODE END USART1_Init 0 */
-
-  /* USER CODE BEGIN USART1_Init 1 */
-
-  /* USER CODE END USART1_Init 1 */
-  huart1.Instance = USART1;
-  huart1.Init.BaudRate = 38400;
-  huart1.Init.WordLength = UART_WORDLENGTH_8B;
-  huart1.Init.StopBits = UART_STOPBITS_1;
-  huart1.Init.Parity = UART_PARITY_NONE;
-  huart1.Init.Mode = UART_MODE_TX_RX;
-  huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart1.Init.OverSampling = UART_OVERSAMPLING_16;
-  huart1.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
-  huart1.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
-  if (HAL_UART_Init(&huart1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN USART1_Init 2 */
-
-  /* USER CODE END USART1_Init 2 */
-
-}
-
-/**
-  * @brief USART2 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_USART2_UART_Init(void)
-{
-
-  /* USER CODE BEGIN USART2_Init 0 */
-
-  /* USER CODE END USART2_Init 0 */
-
-  /* USER CODE BEGIN USART2_Init 1 */
-
-  /* USER CODE END USART2_Init 1 */
-  huart2.Instance = USART2;
-  huart2.Init.BaudRate = 38400;
-  huart2.Init.WordLength = UART_WORDLENGTH_8B;
-  huart2.Init.StopBits = UART_STOPBITS_1;
-  huart2.Init.Parity = UART_PARITY_NONE;
-  huart2.Init.Mode = UART_MODE_TX_RX;
-  huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart2.Init.OverSampling = UART_OVERSAMPLING_16;
-  huart2.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
-  huart2.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
-  if (HAL_UART_Init(&huart2) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN USART2_Init 2 */
-
-  /* USER CODE END USART2_Init 2 */
-
-}
-
-/**
-  * @brief USART3 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_USART3_UART_Init(void)
-{
-
-  /* USER CODE BEGIN USART3_Init 0 */
-
-  /* USER CODE END USART3_Init 0 */
-
-  /* USER CODE BEGIN USART3_Init 1 */
-
-  /* USER CODE END USART3_Init 1 */
-  huart3.Instance = USART3;
-  huart3.Init.BaudRate = 38400;
-  huart3.Init.WordLength = UART_WORDLENGTH_8B;
-  huart3.Init.StopBits = UART_STOPBITS_1;
-  huart3.Init.Parity = UART_PARITY_NONE;
-  huart3.Init.Mode = UART_MODE_TX_RX;
-  huart3.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart3.Init.OverSampling = UART_OVERSAMPLING_16;
-  huart3.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
-  huart3.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
-  if (HAL_UART_Init(&huart3) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN USART3_Init 2 */
-
-  /* USER CODE END USART3_Init 2 */
-
-}
-
-/**
-  * @brief USART4 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_USART4_UART_Init(void)
-{
-
-  /* USER CODE BEGIN USART4_Init 0 */
-
-  /* USER CODE END USART4_Init 0 */
-
-  /* USER CODE BEGIN USART4_Init 1 */
-
-  /* USER CODE END USART4_Init 1 */
-  huart4.Instance = USART4;
-  huart4.Init.BaudRate = 38400;
-  huart4.Init.WordLength = UART_WORDLENGTH_8B;
-  huart4.Init.StopBits = UART_STOPBITS_1;
-  huart4.Init.Parity = UART_PARITY_NONE;
-  huart4.Init.Mode = UART_MODE_TX_RX;
-  huart4.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart4.Init.OverSampling = UART_OVERSAMPLING_16;
-  huart4.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
-  huart4.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
-  if (HAL_UART_Init(&huart4) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN USART4_Init 2 */
-
-  /* USER CODE END USART4_Init 2 */
-
-}
-
-/**
-  * @brief GPIO Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_GPIO_Init(void)
-{
-  GPIO_InitTypeDef GPIO_InitStruct = {0};
-
-  /* GPIO Ports Clock Enable */
-  __HAL_RCC_GPIOC_CLK_ENABLE();
-  __HAL_RCC_GPIOF_CLK_ENABLE();
-  __HAL_RCC_GPIOA_CLK_ENABLE();
-  __HAL_RCC_GPIOB_CLK_ENABLE();
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, UC_T3_ENCQ_Pin|UC_T3_RST_Pin|UC_T3_ENL_Pin|UC_T0_ENCQ_Pin
-                          |UC_T0_ENL_Pin|RST_ETH_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, CS_ETH_Pin|UC_T0_RST_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, UC_T2_RST_Pin|UC_T2_ENCQ_Pin|UC_T2_ENL_Pin|UC_T1_RST_Pin
-                          |UC_T1_ENCQ_Pin|UC_T1_ENL_Pin|RST_ETHB4_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pins : T3_UC_SIO_Pin T3_UC_IRQ_Pin T0_UC_SIO_Pin T0_UC_IRQ_Pin
-                           INT_ETH_Pin */
-  GPIO_InitStruct.Pin = T3_UC_SIO_Pin|T3_UC_IRQ_Pin|T0_UC_SIO_Pin|T0_UC_IRQ_Pin
-                          |INT_ETH_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : UC_T3_ENCQ_Pin UC_T3_RST_Pin UC_T3_ENL_Pin UC_T0_ENCQ_Pin
-                           UC_T0_ENL_Pin RST_ETH_Pin */
-  GPIO_InitStruct.Pin = UC_T3_ENCQ_Pin|UC_T3_RST_Pin|UC_T3_ENL_Pin|UC_T0_ENCQ_Pin
-                          |UC_T0_ENL_Pin|RST_ETH_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : CS_ETH_Pin UC_T0_RST_Pin */
-  GPIO_InitStruct.Pin = CS_ETH_Pin|UC_T0_RST_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : UC_T2_RST_Pin UC_T2_ENCQ_Pin UC_T2_ENL_Pin UC_T1_RST_Pin
-                           UC_T1_ENCQ_Pin UC_T1_ENL_Pin RST_ETHB4_Pin */
-  GPIO_InitStruct.Pin = UC_T2_RST_Pin|UC_T2_ENCQ_Pin|UC_T2_ENL_Pin|UC_T1_RST_Pin
-                          |UC_T1_ENCQ_Pin|UC_T1_ENL_Pin|RST_ETHB4_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : T2_UC_IRQ_Pin T2_UC_SIO_Pin T1_UC_IRQ_Pin INT_ETHB5_Pin */
-  GPIO_InitStruct.Pin = T2_UC_IRQ_Pin|T2_UC_SIO_Pin|T1_UC_IRQ_Pin|INT_ETHB5_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : T1_UC_SIO_Pin */
-  GPIO_InitStruct.Pin = T1_UC_SIO_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(T1_UC_SIO_GPIO_Port, &GPIO_InitStruct);
-
+  HAL_RCCEx_CRSConfig(&RCC_CRSInitStruct);
 }
 
 /* USER CODE BEGIN 4 */
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+		if(huart->Instance == USART1)
+		{
+			if(buf_rec0_l == 0)
+			{
+//				  timeout_rec0 = HAL_GetTick() + TIMEOUT_RECEIVE;
+				timeout_rec0 = HAL_GetTick();
+				buf_rec0[0] = 0x99;
+//				buf_rec0[1] = 0x88;
+//				buf_rec0[2] = 0x77;
+			}
+
+			buf_rec0[buf_rec0_l] = uartRxBuffer[0];
+			buf_rec0_l++;
+
+			//			if(HAL_GetTick() >= timeout_rec0)
+//			if((HAL_GetTick() - timeout_rec0) > (uint32_t)TIMEOUT_RECEIVE)
+//			{
+
+//				memmove(buf_rec0+8, buf_rec0, buf_rec0_l);
+//				buf_rec0[0] = (uint8_t)HEADER_RS.HeaderVersion;
+//				buf_rec0[1] = (uint8_t)HEADER_RS.HeaderSize;
+//				buf_rec0[2] = (uint8_t)HEADER_RS.IO_LINK_ProtocolVersion;
+//				buf_rec0[3] = (uint8_t)HEADER_RS.TransferDirection;
+//				buf_rec0[4] = (uint8_t)HEADER_RS.IO_LINK_FrameType;
+//				buf_rec0[5] = (uint8_t)HEADER_RS.IO_LINK_FrameSize0;
+//				buf_rec0[6] = (uint8_t)HEADER_RS.IO_LINK_FrameSize1;
+//				buf_rec0[7] = (uint8_t)HEADER_RS.PortNumber;
+				CDC_Transmit_FS(&buf_rec0[0], buf_rec0_l);
+//				memset(buf_rec0, '\0', buf_rec0_l+8);
+				buf_rec0_l = 0;
+//				HAL_UART_Abort_IT(&huart1);
+				__HAL_UART_FLUSH_DRREGISTER(&huart1);
+
+//			}
+//			else
+//			{
+
+				HAL_UART_Receive_IT(&huart1, &uartRxBuffer[0], 1);
+
+//			}
+
+
+
+		}
+		if(huart->Instance == USART2)
+		{
+//			CDC_Transmit_FS(&uartRxBuffer[1], 1);
+			HAL_UART_Receive_IT(&huart2, &uartRxBuffer[1], 1);
+		}
+		if(huart->Instance == USART3)
+		{
+//			CDC_Transmit_FS(&uartRxBuffer[2], 1);
+			HAL_UART_Receive_IT(&huart3, &uartRxBuffer[2], 1);
+		}
+		if(huart->Instance == USART4)
+		{
+//			CDC_Transmit_FS(&uartRxBuffer[3], 1);
+			HAL_UART_Receive_IT(&huart4, &uartRxBuffer[3], 1);
+		}
+}
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+
+	if(htim->Instance == TIM7)
+	{
+		if(cnt%100 == 0) // co 10 ms
+		{
+			if(periodically_uart[0] == 1)
+			{
+				uint8_t data_period_tx[2] = {0xF1, 0x94};
+				L6360_PinEnableCQ(0);
+				L6360_UartSendData(0, data_period_tx[0]);
+				L6360_UartSendData(0, data_period_tx[1]);
+				L6360_PinDisableCQ(0);
+			}
+			if(periodically_uart[1] == 1)
+			{
+				uint8_t data_period_tx[2] = {0xF1, 0x94};
+				L6360_PinEnableCQ(1);
+				L6360_UartSendData(1, data_period_tx[0]);
+				L6360_UartSendData(1, data_period_tx[1]);
+				L6360_PinDisableCQ(1);
+			}
+			if(periodically_uart[2] == 1)
+			{
+				uint8_t data_period_tx[2] = {0xF1, 0x94};
+				L6360_PinEnableCQ(2);
+				L6360_UartSendData(2, data_period_tx[0]);
+				L6360_UartSendData(2, data_period_tx[1]);
+				L6360_PinDisableCQ(2);
+			}
+			if(periodically_uart[3] == 1)
+			{
+				uint8_t data_period_tx[2] = {0xF1, 0x94};
+				L6360_PinEnableCQ(3);
+				L6360_UartSendData(3, data_period_tx[0]);
+				L6360_UartSendData(3, data_period_tx[1]);
+				L6360_PinDisableCQ(3);
+			}
+		}
+
+		if(cnt%100 == 0) // co 100 ms
+		{
+			if(periodically_i2c == 1)
+			{
+				uint8_t data_i2c_rx[1];
+				HAL_I2C_Master_Receive(&hi2c1, 0xC0, data_i2c_rx, 1, 10);
+				HAL_I2C_Master_Receive(&hi2c1, 0xC2, data_i2c_rx, 1, 10);
+				HAL_I2C_Master_Receive(&hi2c1, 0xC4, data_i2c_rx, 1, 10);
+				HAL_I2C_Master_Receive(&hi2c1, 0xC6, data_i2c_rx, 1, 10);
+			}
+		}
+
+		if(cnt%200 == 0)
+		{
+			if(periodically_sio > 0)
+			{
+				uint8_t send = L6360_SioRead(periodically_sio - 10) + '0';
+				CDC_Transmit_FS(&send, 1);
+			}
+		}
+
+
+		cnt++;
+		if(cnt > 65000)
+		{
+			cnt = 1;
+		}
+	}
+}
+
+void DisplayNetConf(void)
+{
+	uint8_t tmpstr[6] = {0,};
+	ctlnetwork(CN_GET_NETINFO, (void*) &gWIZNETINFO);
+	ctlwizchip(CW_GET_ID,(void*)tmpstr);
+
+	if(gWIZNETINFO.dhcp == NETINFO_DHCP)
+	{
+//		printf("\r\n===== %s NET CONF : DHCP =====\r\n",(char*)tmpstr);
+		memset(USB_txBuffer, '\0', sizeof(USB_txBuffer));
+		USB_txLength = sprintf((char*)USB_txBuffer, "\r\n===== %s NET CONF : DHCP =====\r\n",(char*)tmpstr);
+		CDC_Transmit_FS(USB_txBuffer, USB_txLength);
+	}
+	else
+	{
+//		printf("\r\n===== %s NET CONF : Static =====\r\n",(char*)tmpstr);
+		memset(USB_txBuffer, '\0', sizeof(USB_txBuffer));
+		USB_txLength = sprintf((char*)USB_txBuffer, "\r\n===== %s NET CONF : Static =====\r\n",(char*)tmpstr);
+		CDC_Transmit_FS(USB_txBuffer, USB_txLength);
+	}
+	memset(USB_txBuffer, '\0', sizeof(USB_txBuffer));
+	USB_txLength = sprintf((char*)USB_txBuffer, " MAC : %02X:%02X:%02X:%02X:%02X:%02X\r\n", gWIZNETINFO.mac[0], gWIZNETINFO.mac[1], gWIZNETINFO.mac[2], gWIZNETINFO.mac[3], gWIZNETINFO.mac[4], gWIZNETINFO.mac[5]);
+	CDC_Transmit_FS(USB_txBuffer, USB_txLength);
+	memset(USB_txBuffer, '\0', sizeof(USB_txBuffer));
+	USB_txLength = sprintf((char*)USB_txBuffer, " IP : %d.%d.%d.%d\r\n", gWIZNETINFO.ip[0], gWIZNETINFO.ip[1], gWIZNETINFO.ip[2], gWIZNETINFO.ip[3]);
+	CDC_Transmit_FS(USB_txBuffer, USB_txLength);
+	memset(USB_txBuffer, '\0', sizeof(USB_txBuffer));
+	USB_txLength = sprintf((char*)USB_txBuffer, " GW : %d.%d.%d.%d\r\n", gWIZNETINFO.gw[0], gWIZNETINFO.gw[1], gWIZNETINFO.gw[2], gWIZNETINFO.gw[3]);
+	CDC_Transmit_FS(USB_txBuffer, USB_txLength);
+	memset(USB_txBuffer, '\0', sizeof(USB_txBuffer));
+	USB_txLength = sprintf((char*)USB_txBuffer, " SN : %d.%d.%d.%d\r\n", gWIZNETINFO.sn[0], gWIZNETINFO.sn[1], gWIZNETINFO.sn[2], gWIZNETINFO.sn[3]);
+	CDC_Transmit_FS(USB_txBuffer, USB_txLength);
+//	printf(" MAC : %02X:%02X:%02X:%02X:%02X:%02X\r\n", gWIZNETINFO.mac[0], gWIZNETINFO.mac[1], gWIZNETINFO.mac[2], gWIZNETINFO.mac[3], gWIZNETINFO.mac[4], gWIZNETINFO.mac[5]);
+//	printf(" IP : %d.%d.%d.%d\r\n", gWIZNETINFO.ip[0], gWIZNETINFO.ip[1], gWIZNETINFO.ip[2], gWIZNETINFO.ip[3]);
+//	printf(" GW : %d.%d.%d.%d\r\n", gWIZNETINFO.gw[0], gWIZNETINFO.gw[1], gWIZNETINFO.gw[2], gWIZNETINFO.gw[3]);
+//	printf(" SN : %d.%d.%d.%d\r\n", gWIZNETINFO.sn[0], gWIZNETINFO.sn[1], gWIZNETINFO.sn[2], gWIZNETINFO.sn[3]);
+//	printf("=======================================\r\n");
+}
+
+
+
+
 
 /* USER CODE END 4 */
 

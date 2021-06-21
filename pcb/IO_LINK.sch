@@ -1,4 +1,5 @@
 EESchema Schematic File Version 4
+LIBS:IO_LINK-cache
 EELAYER 30 0
 EELAYER END
 $Descr A4 11693 8268
@@ -74,7 +75,7 @@ IO-LINK MASTER board
 Text Notes 8100 7650 0    50   Italic 0
 22.01.2021\n
 $Comp
-L IO_LINK_LIB:MountingHole H1
+L IO_LINK-rescue:MountingHole-IO_LINK_LIB H1
 U 1 1 62AD8F26
 P 700 7550
 F 0 "H1" H 650 7700 50  0000 L CNN
@@ -85,7 +86,7 @@ F 3 "~" H 700 7550 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L IO_LINK_LIB:MountingHole H2
+L IO_LINK-rescue:MountingHole-IO_LINK_LIB H2
 U 1 1 62AD96D2
 P 900 7550
 F 0 "H2" H 850 7700 50  0000 L CNN
@@ -96,7 +97,7 @@ F 3 "~" H 900 7550 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L IO_LINK_LIB:MountingHole H3
+L IO_LINK-rescue:MountingHole-IO_LINK_LIB H3
 U 1 1 62AD9A2E
 P 1100 7550
 F 0 "H3" H 1050 7700 50  0000 L CNN
@@ -107,7 +108,7 @@ F 3 "~" H 1100 7550 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L IO_LINK_LIB:MountingHole H4
+L IO_LINK-rescue:MountingHole-IO_LINK_LIB H4
 U 1 1 62AD9D79
 P 1300 7550
 F 0 "H4" H 1250 7700 50  0000 L CNN

@@ -4,3 +4,5 @@
 *.mk
 firmware/Debug/
 firmware/IOLINK_MASTER/Debug/
+__pycache__
+.vscode

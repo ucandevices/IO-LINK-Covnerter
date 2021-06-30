@@ -1,4 +1,6 @@
-from IOLinkTools import IOLink, IOLinkFrame
+from IOLinkTools import IOLink
+from IOLinkTools import IO_PORT_NUMBER
+from IOLinkTools import IO_FRAME_TYPE
 import time
 
 def newframe_handler(io_link_frame):
@@ -6,33 +8,37 @@ def newframe_handler(io_link_frame):
     print(io_link_frame.FrameData.hex(), end='\n')
 
 
-iolink = IOLink('COM43',newframe_handler)
+iolink = IOLink('COM43',newframe_handler, 1)
 
-iolink.sendData((b'\x01\x00\x00\x01\x0C\x00\x00\x00')) #WAKEUP
+iolink.sendData(IO_PORT_NUMBER.PORT_0, IO_FRAME_TYPE.WAKE_UP, (b'')) #WAKEUP
 time.sleep(2)
 
 ## read device name
-iolink.sendData((b'\x01\x00\x00\x01\x01\x00\x00\x00\x70\x93\x10\x83\x00\x00\x00\x00\x00')) #  request read from 0x10 (Name of device)  
+iolink.sendData(IO_PORT_NUMBER.PORT_0, IO_FRAME_TYPE.TYPE_1,(b'\x70\x93\x10\x83')) #  request read from 0x10 (Name of device)  
 time.sleep(0.5)
-iolink.sendData((b'\x01\x00\x00\x01\x01\x00\x00\x00\xF0')) #request of data read 
+iolink.sendData(IO_PORT_NUMBER.PORT_0, IO_FRAME_TYPE.TYPE_1,(b'\xF0')) #request of data read ISDU Read Start
 time.sleep(0.5)
-iolink.sendData((b'\x01\x00\x00\x01\x01\x00\x00\x00\xF0')) #request of data read 
+iolink.sendData(IO_PORT_NUMBER.PORT_0, IO_FRAME_TYPE.TYPE_1,(b'\xF0')) #request of data read ISDU Read Start
 time.sleep(0.5)
-iolink.sendData((b'\x01\x00\x00\x01\x01\x00\x00\x00\xE1')) #request of data read 
+iolink.sendData(IO_PORT_NUMBER.PORT_0, IO_FRAME_TYPE.TYPE_1,(b'\xE1')) #request of data read ISDU Read Count 1
 time.sleep(0.5)
-iolink.sendData((b'\x01\x00\x00\x01\x01\x00\x00\x00\xE2')) #request of data read 
+iolink.sendData(IO_PORT_NUMBER.PORT_0, IO_FRAME_TYPE.TYPE_1,(b'\xE2')) #request of data read ISDU Read Count 1
 time.sleep(0.5)
-iolink.sendData((b'\x01\x00\x00\x01\x01\x00\x00\x00\xF1')) #request of data read end
+iolink.sendData(IO_PORT_NUMBER.PORT_0, IO_FRAME_TYPE.TYPE_1,(b'\xF1')) #request of data read end ISDU Abort
 time.sleep(0.5)
 
 
 ## read cyclic data
-iolink.sendData((b'\x01\x00\x00\x01\x01\x00\x00\x00\x20\x99\x00\x00\x00\x00\x00\x00\x00')) #request read cyclic data, device state
+iolink.sendData(IO_PORT_NUMBER.PORT_0, IO_FRAME_TYPE.TYPE_1,(b'\x20\x99')) #request read cyclic data, device state
 time.sleep(0.5)
-while True:
-    iolink.sendData((b'\x01\x00\x00\x01\x02\x00\x00\x00\xF1'))
+for x in range(15):
+
+    iolink.sendData(IO_PORT_NUMBER.PORT_0, IO_FRAME_TYPE.TYPE_2,(b'\xF1'))
     time.sleep(0.5)
 
+iolink.deInitSerial()
+
+print("end")
 ## end
 
 # input("Press Enter to continue...")

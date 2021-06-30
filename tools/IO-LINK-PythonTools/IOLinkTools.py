@@ -3,6 +3,7 @@ import math
 import time
 import threading
 import logging
+from enum import Enum
 
 logger = logging.getLogger()
 
@@ -21,8 +22,23 @@ class IOLinkFrame:
     FrameType = 0
     FrameData = bytearray()
 
+class IO_PORT_NUMBER(Enum):
+    PORT_0 = 0
+    PORT_1 = 1
+    PORT_2 = 2
+    PORT_3 = 3
 
+class IO_FRAME_TYPE(Enum): 
+    TYPE_0 = 0
+    TYPE_1 = 1
+    TYPE_2 = 2 
+    L6360_RESET = 10
+    POWER_UP = 11
+    WAKE_UP = 12 
+    SIO = 13
 class IOLink:
+
+
     IO_LINK_HEADER_SIZE_BYTES = 0
 
     def __def_frame_rx_handler(self, f):
@@ -31,13 +47,13 @@ class IOLink:
     def __def_new_frame_rx_handler(self, f):
         pass
 
-    def __init__(self, com, rx_handler):
-        self.ser = serial.Serial(com, timeout=0.02)
+    def __init__(self, com, rx_handler, autochecksumCalculation):
+        self.ser = serial.Serial(com, timeout=2)
         if (self.ser == None):
             raise NameError('SerialPortNotPresent')
         self.ser.reset_output_buffer()
         self.ser.reset_input_buffer()
-
+        self.autochecksumCalculation = autochecksumCalculation
         self.__rx_byte_thread_handler = threading.Thread(target=self.__rxThread, args=())
         self.uart_buffer = bytearray()
         self._stop_event = threading.Event()
@@ -80,18 +96,29 @@ class IOLink:
         self.uart_buffer = bytearray()
         self.newframe_handler(self.lf)
 
-    def sendData(self, data):
-        self.ser.write(data)
-        logger.info(data)
+    def sendData(self, portNo, FrameType,data):
+        #construct IO_LINK_MASTER header
+        header = bytearray(8)
+        header[0] = self.autochecksumCalculation #HeaderVersion; // Currently calculate CRC on embedded "1" or CRC is send in request "0"
+        header[1] = 0 # // size in bytes fixed 8
+        header[2] = 0 # // 0
+        header[3] = 1 # // cast from enum ? in / out
+        header[4] = FrameType.value # //cast from enum ? TYPE_0, TYPE_1_1, TYPE_1_2, and TYPE_2_1 1541 through TYPE_2_5 + extra WAKEUP
+        header[5] = 0 # // IO LINK Frame Size in bytes
+        header[6] = 0 # // IO LINK Frame Size in bytes
+        header[7] = portNo.value #//for UCAN 0-3 IO LINK PORT
+    
+        header.extend(data)
+        self.ser.write(header)
+        logger.info(header)
 
     def deInitSerial(self):
-        self.ser.flush()
-        self.ser.close()
-        del self.ser
-
-    def __del__(self):
-        """Stop reception"""
         if (self.__rx_byte_thread_handler.is_alive()):
             self._stop_event.set()
             self.__rx_byte_thread_handler.join()
+     
+    def __del__(self):
         self.deInitSerial()
+        self.ser.flush()
+        self.ser.close()
+        del self.ser

@@ -7,21 +7,6 @@ from enum import Enum
 
 logger = logging.getLogger()
 
-
-class IOLinkFrame:
-    """IO-LINK SPE Kindoff packet.
-
-    Attributes
-    ----------
-    IO_LINK_FrameType: uint8_t
-        cast from enum ? TYPE_0, TYPE_1_1, TYPE_1_2, and TYPE_2_1 1541 through TYPE_2_5 + extra WAKEUP
-        enum IO_FRAME {TYPE_0 = 0, TYPE_1, TYPE_2 L6360_RESET = 10, POWER_UP, WAKE_UP, SIO};
-    data: bytearray
-        frame data as byte array
-    """
-    FrameType = 0
-    FrameData = bytearray()
-
 class IO_PORT_NUMBER(Enum):
     PORT_0 = 0
     PORT_1 = 1
@@ -36,10 +21,27 @@ class IO_FRAME_TYPE(Enum):
     POWER_UP = 11
     WAKE_UP = 12 
     SIO = 13
+class IOLinkFrame:
+    """IO-LINK SPE Kindoff packet.
+
+    Attributes
+    ----------
+    IO_LINK_FrameType: uint8_t
+        cast from enum ? TYPE_0, TYPE_1_1, TYPE_1_2, and TYPE_2_1 1541 through TYPE_2_5 + extra WAKEUP
+        enum IO_FRAME {TYPE_0 = 0, TYPE_1, TYPE_2 L6360_RESET = 10, POWER_UP, WAKE_UP, SIO};
+    data: bytearray
+        frame data as byte array
+    """
+    PortNumber = IO_PORT_NUMBER.PORT_0
+    FrameType = IO_FRAME_TYPE.TYPE_0
+    FrameData = bytearray()
+    FrameLen = 0
+
+
 class IOLink:
 
 
-    IO_LINK_HEADER_SIZE_BYTES = 0
+    IO_LINK_HEADER_SIZE_BYTES = 8
 
     def __def_frame_rx_handler(self, f):
         pass
@@ -90,7 +92,9 @@ class IOLink:
         #     uint8_t PortNumber; //for UCAN 0-3 IO LINK PORT
         # } IO_LINK_SPE_HEADER;
         #
-        # self.lf.FrameType = self.uart_buffer[4]
+        self.lf.FrameType = IO_FRAME_TYPE(self.uart_buffer[4])
+        self.lf.FrameLen = self.uart_buffer[6]
+        self.lf.PortNumber = IO_PORT_NUMBER(self.uart_buffer[7])
         self.lf.FrameData = self.uart_buffer[self.IO_LINK_HEADER_SIZE_BYTES:len(self.uart_buffer)]
         # self.lf.FrameData = self.uart_buffer[0:len(self.uart_buffer)]
         self.uart_buffer = bytearray()

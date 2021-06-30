@@ -1,11 +1,10 @@
-from IOLinkTools import IOLink
-from IOLinkTools import IO_PORT_NUMBER
-from IOLinkTools import IO_FRAME_TYPE
+from IOLinkTools import IOLink, IOLinkFrame, IO_PORT_NUMBER, IO_FRAME_TYPE
+
 import time
 
 def newframe_handler(io_link_frame):
-    print("new data rx", end=' ')
-    print(io_link_frame.FrameData.hex(), end='\n')
+    print("IO_LINK > ", end=' ')
+    print(io_link_frame.PortNumber.name + ": " + io_link_frame.FrameType.name + " | " + io_link_frame.FrameData.hex(), end='\n')
 
 
 iolink = IOLink('COM43',newframe_handler, 1)
